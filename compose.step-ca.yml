@@ -1,0 +1,47 @@
+services:
+  step-ca:
+    container_name: step-ca
+    hostname: step-ca
+    restart: unless-stopped
+    profiles:
+      - step-ca
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      args:
+        STEP_CA_VERSION: 0.28.4
+    environment:
+      STEP_PATH: /home/step
+      STEP_CA_NAME: "Untrustworthy"
+      STEP_CA_PROVISIONER_EMAIL: "pki@rune-vikestad.dev"
+      STEP_CA_HOST: "step-ca"
+      STEP_CA_PORT: "9000"
+    volumes:
+      - step-ca-data:/home/step
+    secrets:
+      - source: step-ca-password
+        target: step-ca-password
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
+    ports:
+      - 9000:9000
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS --resolve step-ca:9000:127.0.0.1 --cacert /home/step/certs/root_ca.crt https://step-ca:9000/health -o /dev/null"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - default
+
+volumes:
+  step-ca-data:
+    external: false
+
+secrets:
+  step-ca-password:
+    file: ./secrets/step-ca-password

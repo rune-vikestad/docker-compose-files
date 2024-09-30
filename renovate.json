@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["dockerfile", "docker-compose"],
+  "labels": ["deps", "renovate"],
+  "automerge": false,
+
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": [
+        "grafana/grafana-oss",
+        "grafana/loki",
+        "grafana/mimir",
+        "grafana/tempo"
+      ],
+      "groupName": "grafana-stack",
+      "separateMinorPatch": true,
+      "ignorePrereleases": true
+    }
+  ],
+
+  "regexManagers": [
+    {
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["ARG\\s+GRAFANA_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "grafana/grafana-oss",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["ARG\\s+GRAFANA_LOKI_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "grafana/loki",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["ARG\\s+GRAFANA_MIMIR_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "grafana/mimir",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["ARG\\s+GRAFANA_TEMPO_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "grafana/tempo",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+version: "3.9"
+
+networks:
+  pki:
+    driver: bridge
+
+volumes:
+  step-home: {}        # CA's $STEPPATH (contains certs/root_ca.crt)
+  keycloak-certs: {}   # Persist issued certs/keys
+
+services:
+  # Optional: include only if you want step-ca in this stack
+  step-ca:
+    image: your-step-ca-image:latest
+    container_name: step-ca
+    hostname: step-ca
+    environment:
+      STEP_CA_NAME: "Untrustworthy"
+      STEP_CA_PROVISIONER_EMAIL: "pki@example.com"
+      STEP_CA_HOST: "step-ca"
+      STEP_CA_PORT: "9000"
+      # Your ca.json must include an ACME provisioner (e.g., name: "acme")
+    ports:
+      - "9000:9000"
+    volumes:
+      - step-home:/home/step
+    networks: ["pki"]
+
+  keycloak:
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
+    container_name: keycloak
+    depends_on:
+      - step-ca
+    networks:
+      pki:
+        aliases:
+          # must match KC_HOSTNAME so step-ca can resolve challenge host
+          - keycloak.local
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # Must match the cert's SAN
+      KC_HOSTNAME: keycloak.local
+
+      # Use PEMs (written by the entrypoint) for HTTPS
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/tls.key
+
+      # ACME (step-ca) client settings for Smallstep CLI
+      STEP_CA_URL: https://step-ca:9000
+      STEP_CA_ROOT: /mnt/step/certs/root_ca.crt
+      STEP_ACME_PROVISIONER: acme
+      STEP_ACME_CONTACT: mailto:pki@example.com
+      STEP_CERT_NOT_AFTER: 2160h
+
+    # Expose ACME HTTP-01 on 80; expose Keycloak TLS as 443
+    ports:
+      - "80:80"
+      - "443:8443"
+
+    volumes:
+      - keycloak-certs:/opt/keycloak/conf
+      - step-home:/mnt/step:ro
+
+    # Keycloak args come after our entrypoint
+    command: ["start", "--optimized"]
+
+    restart: unless-stopped

@@ -1,0 +1,61 @@
+services:
+  #
+  # Apicurio Registry
+  #
+  apicurio-registry:
+    container_name: apicurio-registry
+    hostname: apicurio-registry
+    restart: unless-stopped
+    profiles:
+      - apicurio-registry
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    build:
+      context: ./apicurio-registry
+      dockerfile: Dockerfile
+      args:
+        APICURIO_REGISTRY_VERSION: 3.0.12
+    environment:
+      APICURIO_STORAGE_KIND: sql
+      APICURIO_STORAGE_SQL_KIND: postgresql
+      APICURIO_DATASOURCE_URL: jdbc:postgresql://postgresql/apicurio
+      APICURIO_DATASOURCE_USERNAME: apicurio
+      APICURIO_DATASOURCE_PASSWORD: sKWCsUmPoA5EzXhQ
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: "http://localhost:8888"
+      QUARKUS_HTTP_CORS_METHODS: "GET,PUT,POST,DELETE,OPTIONS"
+      QUARKUS_HTTP_CORS_HEADERS: "Authorization,Content-Type,Accept,Origin"
+    healthcheck:
+      test: ["CMD-SHELL","curl -fsS http://localhost:8080/apis/registry/v2/search/artifacts?limit=1 >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    ports:
+      - 8080:8080
+    networks:
+      - default
+  #
+  # Apicurio Registry UI
+  #
+  apicurio-registry-ui:
+    container_name: apicurio-registry-ui
+    hostname: apicurio-registry-ui
+    restart: unless-stopped
+    profiles:
+      - apicurio-registry
+      - apicurio-registry-ui
+    depends_on:
+      apicurio-registry:
+        condition: service_healthy
+    build:
+      context: ./apicurio-registry-ui
+      dockerfile: Dockerfile
+      args:
+        APICURIO_REGISTRY_UI_VERSION: 3.0.12
+    environment:
+      REGISTRY_API_URL: http://localhost:8080/apis/registry/v3
+    ports:
+      - "8888:8080"
+    networks:
+      - default

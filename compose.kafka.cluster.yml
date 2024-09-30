@@ -1,0 +1,213 @@
+################################################################################
+# Services
+################################################################################
+services:
+  #
+  # Kafka → Controller
+  #
+  kafka-controller:
+    container_name: kafka-controller
+    hostname: kafka-controller
+    build:
+      context: ./kafka
+      dockerfile: Dockerfile
+      args:
+        KAFKA_VERSION: 4.0.0
+    profiles:
+      - kafka
+    environment:
+      KAFKA_NODE_ID: 0
+      KAFKA_CLUSTER_ID: e7dfec10-d682-11ee-8e0d-0242ac120002
+      KAFKA_PROCESS_ROLES: controller
+      # Listen for controller quorum traffic
+      KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-controller:9093
+    volumes:
+      - kafka-controller-meta:/var/lib/kafka/meta
+      - kafka-controller-config:/opt/kafka/config
+      - kafka-controller-config-shared:/mnt/shared/config
+      - kafka-controller-log:/var/log/kafka
+      - kafka-controller-certs:/etc/kafka/certs
+      - kafka-controller-secrets:/etc/kafka/secrets
+    ports:
+      - 9093:9093
+    healthcheck:
+      # Check if the TCP port 9093 is open and ready to accept connections
+      test: ["CMD", "bash", "-lc", "exec 3<>/dev/tcp/127.0.0.1/9093 && exec 3>&- 3<&-"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    networks:
+      - default
+
+  #
+  # Kafka → Broker #1
+  #
+  kafka-broker-1:
+    container_name: kafka-broker-1
+    hostname: kafka-broker-1
+    build:
+      context: ./kafka
+      dockerfile: Dockerfile
+      args:
+        KAFKA_VERSION: 4.0.0
+    profiles:
+      - kafka
+    depends_on:
+      kafka-controller:
+        condition: service_healthy
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_CLUSTER_ID: e7dfec10-d682-11ee-8e0d-0242ac120002
+      KAFKA_PROCESS_ROLES: broker
+      # Two listeners: internal (BROKER) and host-facing (EXTERNAL)
+      KAFKA_LISTENERS: BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:19094
+      # Internal advertises the Docker hostname, external advertises your host address/ports
+      # Use 127.0.0.1 if clients run on the same machine; otherwise use your machine's LAN IP
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-broker-1:9092,EXTERNAL://127.0.0.1:19094
+      # Map listener names to protocols
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,BROKER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      # Make inter-broker comms use the internal listener
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      # KRaft controller settings
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-controller:9093
+    volumes:
+      - kafka-broker-1-partition-data:/var/lib/kafka/data
+      - kafka-broker-1-meta:/var/lib/kafka/meta
+      - kafka-broker-1-config:/opt/kafka/config
+      - kafka-broker-1-config-shared:/mnt/shared/config
+      - kafka-broker-1-log:/var/log/kafka
+      - kafka-broker-1-certs:/etc/kafka/certs
+      - kafka-broker-1-secrets:/etc/kafka/secrets
+    ports:
+      # Publish only the EXTERNAL listener to host. Keep 9092 internal to Docker network.
+      - 19094:19094
+    healthcheck:
+      # Check if the TCP port 9092 is open and ready to accept connections
+      test: ["CMD", "bash", "-lc", "exec 3<>/dev/tcp/127.0.0.1/9092 && exec 3>&- 3<&-"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    networks:
+      - default
+
+  #
+  # Kafka → Broker #2
+  #
+  kafka-broker-2:
+    container_name: kafka-broker-2
+    hostname: kafka-broker-2
+    build:
+      context: ./kafka
+      dockerfile: Dockerfile
+      args:
+        KAFKA_VERSION: 4.0.0
+    profiles:
+      - kafka
+    depends_on:
+      kafka-controller:
+        condition: service_healthy
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_CLUSTER_ID: e7dfec10-d682-11ee-8e0d-0242ac120002
+      KAFKA_PROCESS_ROLES: broker
+      # Two listeners: internal (BROKER) and host-facing (EXTERNAL)
+      KAFKA_LISTENERS: BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:19095
+      # Internal advertises the Docker hostname, external advertises your host address/ports
+      # Use 127.0.0.1 if clients run on the same machine; otherwise use your machine's LAN IP
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-broker-2:9092,EXTERNAL://127.0.0.1:19095
+      # Map listener names to protocols
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,BROKER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      # Make inter-broker comms use the internal listener
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      # KRaft controller settings
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-controller:9093
+    volumes:
+      - kafka-broker-2-partition-data:/var/lib/kafka/data
+      - kafka-broker-2-meta:/var/lib/kafka/meta
+      - kafka-broker-2-config:/opt/kafka/config
+      - kafka-broker-2-config-shared:/mnt/shared/config
+      - kafka-broker-2-log:/var/log/kafka
+      - kafka-broker-2-certs:/etc/kafka/certs
+      - kafka-broker-2-secrets:/etc/kafka/secrets
+    ports:
+      # Publish only the EXTERNAL listener to host. Keep 9092 internal to Docker network.
+      - 19095:19095
+    healthcheck:
+      # Check if the TCP port 9092 is open and ready to accept connections
+      test: ["CMD", "bash", "-lc", "exec 3<>/dev/tcp/127.0.0.1/9092 && exec 3>&- 3<&-"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    networks:
+      - default
+
+  #
+  # Kafka UI
+  #
+  kafka-ui:
+    container_name: kafka-ui
+    hostname: kafka-ui
+    restart: unless-stopped
+    profiles:
+      - kafka-ui
+    depends_on:
+      kafka-controller:
+        condition: service_healthy
+      kafka-broker-1:
+        condition: service_healthy
+      kafka-broker-2:
+        condition: service_healthy
+    build:
+      context: ./kafka-ui
+      dockerfile: Dockerfile
+      args:
+        KAFKA_UI_VERSION: v0.7.2
+    environment:
+      KAFKA_CLUSTERS_0_NAME: Default
+      # Stays on internal addresses since Kafka UI is in the same Docker network
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker-1:9092,kafka-broker-2:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://apicurio-registry:8080/apis/ccompat/v7
+    ports:
+      - 8092:8080
+    healthcheck:
+      test: ["CMD-SHELL","/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - default
+
+################################################################################
+# Volumes
+################################################################################
+volumes:
+  kafka-controller-meta:
+  kafka-controller-config:
+  kafka-controller-config-shared:
+  kafka-controller-log:
+  kafka-controller-certs:
+  kafka-controller-secrets:
+
+  kafka-broker-1-partition-data:
+  kafka-broker-1-meta:
+  kafka-broker-1-config:
+  kafka-broker-1-config-shared:
+  kafka-broker-1-log:
+  kafka-broker-1-certs:
+  kafka-broker-1-secrets:
+
+  kafka-broker-2-partition-data:
+  kafka-broker-2-meta:
+  kafka-broker-2-config:
+  kafka-broker-2-config-shared:
+  kafka-broker-2-log:
+  kafka-broker-2-certs:
+  kafka-broker-2-secrets:

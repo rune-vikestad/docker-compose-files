@@ -1,0 +1,30 @@
+services:
+  # The following compose files are also included:
+  # 
+  # Required
+  #   - compose.apicurio.yml
+  #   - compose.grafana.yml
+  #   - compose.kafka.cluster.yml -or- compose.kafka.single.yml
+  #   - compose.opentelemetry.yml
+  #   - compose.postgresql.yml
+  # 
+  # Optional
+  #   - compose.step-ca.yml
+  #   - compose.microsoft-sql-server-2022.yml
+  #
+  # You can adjust which compose files are loaded by modifying 
+  # the `COMPOSE_PROFILES` environment variable in the `.env` file.
+  #
+  dummy:
+    image: busybox
+    command: ["sh", "-c", "tail -f /dev/null"]
+    profiles: ["dummy"] 
+   
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.0.0/24
+          gateway: 172.16.0.1

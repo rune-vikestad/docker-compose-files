@@ -1,0 +1,21 @@
+services:
+  opentelemetry-collector:
+    container_name: opentelemetry-collector
+    hostname: opentelemetry-collector
+    profiles: 
+      - opentelemetry-collector
+    build:
+      context: ./opentelemetry-collector
+      dockerfile: Dockerfile
+    ports:
+      - 4317:4317   # gRPC Receiver
+      - 4318:4318   # HTTP Receiver
+      - 13133:13133 # Extension (health_check)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:13133/health/status | grep -q 'Server available'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - default
