@@ -1,0 +1,38 @@
+version: '3.9'
+
+name: rune-vikestad
+
+services:
+  microsoft-sql-server-2022:
+    container_name: microsoft-sql-server-2022
+    hostname: microsoft-sql-server-2022
+    build:
+      context: ./microsoft-sql-server-2022
+      dockerfile: Dockerfile
+    restart: unless_stopped
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: BiMZmVQdNff4ki3X
+      MSSQL_COLLATION: SQL_Latin1_General_CP1_CI_AS
+      MSSQL_PID: Developer
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 4G
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - microsoft-sql-server-2022-data:/var/opt/mssql
+    networks:
+      - default
+
+volumes:
+  microsoft-sql-server-2022-data:
+    external: false
+
+networks:
+  default:
+    driver: bridge
+    external: false

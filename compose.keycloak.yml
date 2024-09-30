@@ -1,0 +1,32 @@
+name: keycloak
+
+services:
+  keycloak:
+    container_name: keycloak
+    hostname: keycloak
+    build:
+      context: ./keybloak
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgresql:5432/keycloak
+      KC_DB_PASSWORD: oMp63L95VtUFkffC
+      KEYCLOAK_ADMIN: administrator
+      KEYCLOAK_ADMIN_PASSWORD: tpgZoiSi9XMs2rVp
+      KEYCLOAK_USER: rune-vikestad
+      KEYCLOAK_EMAIL: rune.vikestad@proton.me
+      KEYCLOAK_PASSWORD: VqE2udbjA2BFnY8F
+      KEYCLOAK_STATISTICS: all
+    command: start-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+    external: false
