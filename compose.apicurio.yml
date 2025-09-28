@@ -7,6 +7,7 @@ services:
     hostname: apicurio-registry
     restart: unless-stopped
     profiles:
+      - apicurio
       - apicurio-registry
     depends_on:
       postgresql:
@@ -43,7 +44,7 @@ services:
     hostname: apicurio-registry-ui
     restart: unless-stopped
     profiles:
-      - apicurio-registry
+      - apicurio
       - apicurio-registry-ui
     depends_on:
       apicurio-registry:

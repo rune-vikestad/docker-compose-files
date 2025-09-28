@@ -6,10 +6,11 @@ services:
   microsoft-sql-server-2022:
     container_name: microsoft-sql-server-2022
     hostname: microsoft-sql-server-2022
+    restart: unless-stopped
     build:
       context: ./microsoft-sql-server-2022
       dockerfile: Dockerfile
-    restart: unless_stopped
+    
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: BiMZmVQdNff4ki3X

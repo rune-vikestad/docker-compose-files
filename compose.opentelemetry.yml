@@ -2,6 +2,7 @@ services:
   opentelemetry-collector:
     container_name: opentelemetry-collector
     hostname: opentelemetry-collector
+    restart: unless-stopped
     profiles: 
       - opentelemetry-collector
     build:

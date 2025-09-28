@@ -8,6 +8,7 @@ services:
   kafka-controller:
     container_name: kafka-controller
     hostname: kafka-controller
+    restart: unless-stopped
     build:
       context: ./kafka
       dockerfile: Dockerfile
@@ -15,6 +16,7 @@ services:
         KAFKA_VERSION: 4.0.0
     profiles:
       - kafka
+      - kafka-cluster
     environment:
       KAFKA_NODE_ID: 0
       KAFKA_CLUSTER_ID: e7dfec10-d682-11ee-8e0d-0242ac120002
@@ -49,6 +51,7 @@ services:
   kafka-broker-1:
     container_name: kafka-broker-1
     hostname: kafka-broker-1
+    restart: unless-stopped
     build:
       context: ./kafka
       dockerfile: Dockerfile
@@ -56,6 +59,7 @@ services:
         KAFKA_VERSION: 4.0.0
     profiles:
       - kafka
+      - kafka-cluster
     depends_on:
       kafka-controller:
         condition: service_healthy
@@ -102,6 +106,7 @@ services:
   kafka-broker-2:
     container_name: kafka-broker-2
     hostname: kafka-broker-2
+    restart: unless-stopped
     build:
       context: ./kafka
       dockerfile: Dockerfile
@@ -109,6 +114,7 @@ services:
         KAFKA_VERSION: 4.0.0
     profiles:
       - kafka
+      - kafka-cluster
     depends_on:
       kafka-controller:
         condition: service_healthy

@@ -4,10 +4,12 @@ services:
   keycloak:
     container_name: keycloak
     hostname: keycloak
+    restart: unless-stopped
     build:
       context: ./keybloak
       dockerfile: Dockerfile
-    restart: always
+    profiles:
+      - keycloak
     environment:
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
