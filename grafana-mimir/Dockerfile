@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG GRAFANA_MIMIR_VERSION=2.15.0
+ARG GRAFANA_MIMIR_VERSION=2.17.1
 
 FROM grafana/mimir:${GRAFANA_MIMIR_VERSION}
 

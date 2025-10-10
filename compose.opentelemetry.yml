@@ -8,10 +8,13 @@ services:
     build:
       context: ./opentelemetry-collector
       dockerfile: Dockerfile
+      args:
+        OPENTELEMETRY_COLLECTOR_VERSION: 0.133.0
     ports:
       - 4317:4317   # gRPC Receiver
       - 4318:4318   # HTTP Receiver
       - 13133:13133 # Extension (health_check)
+      - 55679:55679 # Extension (zpages)
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:13133/health/status | grep -q 'Server available'"]
       interval: 10s

@@ -2,6 +2,8 @@ services:
   #
   # Grafana
   #
+  # https://hub.docker.com/layers/grafana/grafana-oss/12.1.1/images/sha256-5749a0e982878aedaa2d320ed14d3bdce7a040a938f482258670009d419a597f
+  #
   grafana:
     container_name: grafana
     hostname: grafana
@@ -11,7 +13,7 @@ services:
       context: ./grafana
       dockerfile: Dockerfile
       args:
-        GRAFANA_VERSION: 12.1.1
+        GRAFANA_OSS_VERSION: 12.1.1
     ports:
       - 3000:3000
     healthcheck:
@@ -24,6 +26,8 @@ services:
       - default
   #
   # Grafana → Loki
+  #
+  # https://hub.docker.com/layers/grafana/loki/3.5/images/sha256-c0a55ae7e49c65132ab4470ceb0ca92a6d958488e136a14028ac6f79e1f9f308
   #
   grafana-loki:
     container_name: grafana-loki
@@ -38,11 +42,15 @@ services:
       context: ./grafana-loki
       dockerfile: Dockerfile
       args:
-        GRAFANA_LOKI_VERSION: 3.3.2
+        GRAFANA_LOKI_VERSION: 3.5
+    ports:
+      - 3100:3100
     networks:
       - default
   #
   # Grafana → Mimir
+  #
+  # https://hub.docker.com/layers/grafana/mimir/2.17.1/images/sha256-4472fb09dfb115591e4f7797aefb68ddf019bddabfb525f7a2c57fb58b2bf454
   #
   grafana-mimir:
     container_name: grafana-mimir
@@ -57,11 +65,13 @@ services:
       context: ./grafana-mimir
       dockerfile: Dockerfile
       args:
-        GRAFANA_MIMIR_VERSION: 2.15.0
+        GRAFANA_MIMIR_VERSION: 2.17.1
     networks:
       - default
   #
   # Grafana → Tempo
+  #
+  # https://hub.docker.com/layers/grafana/tempo/2.8.2/images/sha256-8cfd15734001588eb9c4de7326614be2b668e84d71f8479b149906f0dd65983d
   #
   grafana-tempo:
     container_name: grafana-tempo
@@ -76,6 +86,6 @@ services:
       context: ./grafana-tempo
       dockerfile: Dockerfile
       args:
-        GRAFANA_TEMPO_VERSION: 2.8.0
+        GRAFANA_TEMPO_VERSION: 2.8.2
     networks:
       - default

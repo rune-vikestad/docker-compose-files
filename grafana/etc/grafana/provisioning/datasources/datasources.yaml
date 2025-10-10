@@ -8,7 +8,7 @@ datasources:
     editable: true
     jsonData:
       derivedFields:
-        - datasourceUid: "Tempo"
+        - datasourceUid: "tempo"
           matcherRegex: "trace_id"
           matcherType: "label"
           name: "trace_id"
@@ -21,7 +21,7 @@ datasources:
     jsonData:
       httpMethod: POST
       exemplarTraceIdDestinations:
-        - datasourceUid: Tempo
+        - datasourceUid: tempo
           name: trace_id
       prometheusType: Mimir
       prometheusVersion: 2.9.1
@@ -45,10 +45,10 @@ datasources:
             scope: span
             tag: name
       serviceMap:
-        datasourceUid: Mimir
+        datasourceUid: mimir
       tracesToLogsV2:
         customQuery: true
-        datasourceUid: Loki
+        datasourceUid: loki
         filterByTraceID: false
         query: '{$${__tags}} | trace_id="$${__trace.traceId}"'
         spanEndTimeShift: 30s
