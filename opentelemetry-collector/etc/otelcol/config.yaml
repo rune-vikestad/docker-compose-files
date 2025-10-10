@@ -8,6 +8,8 @@ receivers:
 
 processors:
   batch:
+    send_batch_size: 1
+    timeout: 1s
   memory_limiter:
     check_interval: 1s
     limit_mib: 1000
@@ -22,19 +24,23 @@ exporters:
     endpoint: grafana-tempo:4317
     tls:
       insecure: true
+  debug:
+    verbosity: detailed
 
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
     path: /health/status
+  zpages:
+    endpoint: 0.0.0.0:55679
 
 service:
-  extensions: [health_check]
+  extensions: [health_check, zpages]
   pipelines:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/loki]
+      exporters: [otlphttp/loki, debug]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
@@ -45,4 +51,4 @@ service:
       exporters: [otlp/tempo]
   telemetry:
     logs:
-      level: error
+      level: debug
