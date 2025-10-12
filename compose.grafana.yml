@@ -87,5 +87,15 @@ services:
       dockerfile: Dockerfile
       args:
         GRAFANA_TEMPO_VERSION: 2.8.2
+    volumes:
+      - grafana-tempo-generator-wal:/var/tempo/generator/wal
+      - grafana-tempo-traces-wal:/var/tempo/traces/wal
+      - grafana-tempo-traces-blocks:/var/tempo/traces/blocks
+      
     networks:
       - default
+
+volumes:
+  grafana-tempo-generator-wal:
+  grafana-tempo-traces-wal:
+  grafana-tempo-traces-blocks:
