@@ -16,16 +16,22 @@ processors:
     spike_limit_mib: 100
 
 exporters:
+  # Grafana Loki
   otlphttp/loki:
     endpoint: http://grafana-loki:3100/otlp
+  # Grafana Mimir
   otlphttp/mimir:
     endpoint: http://grafana-mimir:9009/otlp
+  # Grafana Tempo
   otlp/tempo:
     endpoint: grafana-tempo:4317
     tls:
       insecure: true
-  debug:
-    verbosity: detailed
+  # Open Telemetry Satellite Service (e.g. JetBrains Rider)
+  otlp/rider:
+    endpoint: localhost:17011
+    tls:
+      insecure: true
 
 extensions:
   health_check:
@@ -40,15 +46,15 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/loki]
+      exporters: [otlphttp/loki, otlp/satellite]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/mimir]
+      exporters: [otlphttp/mimir, otlp/satellite]
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp/tempo]
+      exporters: [otlp/tempo, otlp/satellite]
   telemetry:
     logs:
       level: error
