@@ -8,8 +8,8 @@ receivers:
 
 processors:
   batch:
-    send_batch_size: 1
-    timeout: 1s
+    send_batch_size: 512
+    timeout: 5s
   memory_limiter:
     check_interval: 1s
     limit_mib: 1000
@@ -40,7 +40,7 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/loki, debug]
+      exporters: [otlphttp/loki]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
@@ -51,4 +51,4 @@ service:
       exporters: [otlp/tempo]
   telemetry:
     logs:
-      level: debug
+      level: error
