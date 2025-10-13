@@ -67,7 +67,7 @@ services:
         KAFKA_UI_VERSION: v0.7.2
     environment:
       KAFKA_CLUSTERS_0_NAME: Default
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker-1:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://apicurio-registry:8080/apis/ccompat/v7
     restart: unless-stopped
     depends_on:
