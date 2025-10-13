@@ -71,7 +71,7 @@ services:
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://apicurio-registry:8080/apis/ccompat/v7
     restart: unless-stopped
     depends_on:
-      - kafka-broker-1
+      - kafka
     ports:
       - 8092:8080
     networks: 
