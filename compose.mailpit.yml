@@ -1,0 +1,18 @@
+services:
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: mailpit
+    restart: unless-stopped
+    environment:
+      MP_SMTP_AUTH: "rune-vikestad:oT6Lb8KLxNnaRk9H"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "8025:8025"   # Web UI
+      - "1025:1025"   # SMTP
+    volumes:
+      - mailpit-data:/data
+    networks:
+      - default
+
+volumes:
+  mailpit-data: 
