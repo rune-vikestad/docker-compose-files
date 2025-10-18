@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.7
+ARG ALPINE_VERSION=3.20
 ARG STEP_CA_VERSION=0.28.4
 
 # Build stage on Alpine to get jq + libonig
-FROM alpine:3.20 AS tools
+FROM alpine:${ALPINE_VERSION} AS tools
 RUN apk add --no-cache jq oniguruma
 
 # Final step-ca image
