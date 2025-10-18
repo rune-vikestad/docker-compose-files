@@ -1,11 +1,10 @@
 FROM mcr.microsoft.com/mssql/server:2022-latest
 
 USER root
-RUN mkdir -p /var/log/docker
-RUN chown mssql:mssql /var/log/docker
+RUN mkdir -p /var/log/docker && chown -R mssql:mssql /var/log/docker
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-entrypoint-initdb.d/ /docker-entrypoint-initdb.d/
+RUN chmod +x /docker-entrypoint.sh
 
-RUN touch /var/log/docker/mssql-serverserver-2022-initdb.log
-COPY entrypoint.sh /entrypoint.sh
-COPY configure.sh /configure.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+USER mssql
+ENTRYPOINT ["/docker-entrypoint.sh"]
