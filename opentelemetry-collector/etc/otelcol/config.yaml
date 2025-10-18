@@ -27,7 +27,7 @@ exporters:
     endpoint: grafana-tempo:4317
     tls:
       insecure: true
-  # Open Telemetry Satellite Service (e.g. JetBrains Rider)
+  # Open Telemetry Satellite Service for JetBrains Rider
   otlp/rider:
     endpoint: localhost:17011
     tls:
@@ -46,15 +46,15 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/loki, otlp/satellite]
+      exporters: [otlphttp/loki, otlp/rider]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp/mimir, otlp/satellite]
+      exporters: [otlphttp/mimir, otlp/rider]
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp/tempo, otlp/satellite]
+      exporters: [otlp/tempo, otlp/rider]
   telemetry:
     logs:
       level: error
