@@ -53,6 +53,34 @@ services:
     networks: 
       - default
 
+  # 
+  # Kafka Bootstrap
+  #
+  kafka-bootstrap:
+    container_name: kafka-bootstrap
+    hostname: kafka-bootstrap
+    restart: on-failure
+    profiles:
+      - kafka
+      - kafka-bootstrap
+    depends_on:
+      kafka:
+        condition: service_healthy
+    build:
+      context: ./kafka-bootstrap
+      dockerfile: Dockerfile
+      args:
+        ALPINE_VERSION: 3.22.2
+        KAFKA_VERSION: 4.0.0
+        SCALA_VERSION: 2.13
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      DEFAULT_PARTITIONS: 1
+      DEFAULT_REPLICATION_FACTOR: 1
+      WAIT_MAX_TRIES: 60
+    networks:
+      - default
+
   #
   # Kafka UI
   #
