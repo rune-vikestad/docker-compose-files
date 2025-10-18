@@ -14,30 +14,11 @@ You can use `.env` file to control a set of environment variables used by docker
 
 ## Services
 
-The following profiles are available.
+You'll find the available services in the root `compose.*.yml` files. 
 
-You can modify `COMPOSE_FILE` and `COMPOSE_PROFILES` in `.env` to add or remove services as you like before your initial `docker compose up`. 
+You can modify `COMPOSE_FILE` and `COMPOSE_PROFILES` in `.env` to add or remove the files and profiles required for the service you'd like to run.
 
-
-| Service                    | Base Image                                            | Ports (Internal)          | Ports (External)  | Profile(s)                     |
-|----------------------------|-------------------------------------------------------|---------------------------|-------------------|--------------------------------|
-| apicurio-registry          | `apicurio/apicurio-registry`:`3.0.12`                 | - `8080` - HTTP           | -  `8080` - HTTP  | apicurio, apicurio-registry    |
-| apicurio-registry-ui       | `apicurio-registry-ui`:`3.0.12`                       | - `8080` - HTTP           | -  `8888` - HTTP  | apicurio, apicurio-registry-ui |
-| grafana                    | | | | |
-| grafana-loki               | | | | |
-| grafana-mimir              | | | | |
-| grafana-tempo              | | | | |
-| kafka-controller           | `apache/kafka-native`:`4.0.0`                         | - `9093` - HTTP           | -  `9093` - TCP   | kafka, kafka-cluster           |
-| kafka-broker-1             | `apache/kafka-native`:`4.0.0`                         | - `9092` - TCP            | - `19094` - TCP   | kafka, kafka-cluster           |
-| kafka-broker-2             | `apache/kafka-native`:`4.0.0`                         | - `9092` - TCP            | - `19095` - TCP   | kafka, kafka-cluster           |
-| kafka                      | `apache/kafka-native`:`4.0.0`                         | - `9092` - TCP            | - `19095` - TCP   | kafka, kafka-single-node       |
-| kafka-ui                   | `provectuslabs/kafka-ui`:`v0.7.2`                     | - `8080` - TCP            | -  `8092` - TCP   | kafka-ui                       |
-| keycloak                   | | | | |
-| microsoft-sql-server-2022  | | | | |
-| opentelemetry-collector    | `opentelemetry-collector-contrib`:`0.133.0`           | - `4317` - gRPC Receiver  |                   |                                |
-| postgresql                 | | | | |
-| step-ca                    | | | | |
-
+Then simply run `docker compose up -d --build`, and wait for them to spin up.
 
 # Health Checks
 
