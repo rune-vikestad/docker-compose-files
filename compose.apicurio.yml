@@ -36,6 +36,33 @@ services:
       - 8080:8080
     networks:
       - default
+
+  apicurio-registry-bootstrap:
+    container_name: apicurio-registry-bootstrap
+    hostname: apicurio-registry-bootstrap
+    restart: on-failure
+    profiles:
+      - apicurio
+      - apicurio-registry
+      - apicurio-registry-bootstrap
+    depends_on:
+      apicurio-registry:
+        condition: service_healthy
+    build:
+      context: ./apicurio-registry-bootstrap
+      dockerfile: Dockerfile
+      args:
+        ALPINE_VERSION: 3.22.2
+    environment:
+      REGISTRY_URL: http://apicurio-registry:8080/apis/registry/v3
+      REGISTRY_GROUP: default
+      SCHEMA_DIR: /usr/local/share/apicurio/schemas
+      ARTIFACT_ID_SUFFIX_BY_TYPE: true
+      LOG_FAILED_HTTP_RESPONSE_HEADERS: true
+      LOG_FAILED_HTTP_RESPONSE_BODY: true
+    networks:
+      - default
+
   #
   # Apicurio Registry UI
   #
