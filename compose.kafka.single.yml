@@ -27,14 +27,14 @@ services:
       KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9093,BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
       # Internal advertises the Docker hostname; external advertises your host address/port
       # Use 127.0.0.1 if clients run on the same machine; otherwise use your machine's LAN IP
-      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-broker-1:9092,EXTERNAL://127.0.0.1:19092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka:9092,EXTERNAL://127.0.0.1:19092
       # Map listener names to protocols
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,BROKER:PLAINTEXT,EXTERNAL:PLAINTEXT
       # Inter-broker comms should use the internal listener
       KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
       # KRaft controller settings (single voter = self)
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-broker-1:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
     volumes:
       #- kafka-partition-data:/var/lib/kafka/data
       - kafka-meta:/var/lib/kafka/meta
