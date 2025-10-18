@@ -3,9 +3,10 @@
 set -euo pipefail
 
 REGISTRY_URL="${REGISTRY_URL:-http://apicurio-registry:8080/apis/registry/v3}"
-REGISTRY_GROUP="${REGISTRY_GROUP:-default}"  # fallback if metadata missing
+REGISTRY_FALLBACK_GROUP="${REGISTRY_FALLBACK_GROUP:-default}"
 SCHEMA_DIR="${SCHEMA_DIR:-/usr/local/share/apicurio/schemas}"
 ARTIFACT_ID_SUFFIX_BY_TYPE="${ARTIFACT_ID_SUFFIX_BY_TYPE:-true}"
+RESOLVE_VERSION_FROM_NAMESPACE="${RESOLVE_VERSION_FROM_NAMESPACE:-true}"
 LOG_FAILED_HTTP_RESPONSE_HEADERS="${LOG_FAILED_HTTP_RESPONSE_HEADERS:-true}"
 LOG_FAILED_HTTP_RESPONSE_BODY="${LOG_FAILED_HTTP_RESPONSE_BODY:-true}"
 
@@ -21,16 +22,37 @@ need_cmd() { command -v "$1" >/dev/null 2>&1 || fail "Required command not found
 # URL-encodes a string using jq @uri (compatible flags for older jq)
 urlenc() { jq -n -r --arg s "$1" '$s|@uri'; }
 
-# Trims CR/LF & spaces, lowercases, strips trailing .json/.proto
+# Trims CR/LF & spaces, lowercases, strips trailing .json/.proto from a group id
 normalize_group() {
   local s="$1"
-  s="${s//$'\r'/}"                           # strip CR
-  s="${s#"${s%%[![:space:]]*}"}"            # ltrim
-  s="${s%"${s##*[![:space:]]}"}"            # rtrim
-  s="${s,,}"                                 # lowercase
-  [[ "$s" == *.json ]] && s="${s%.json}"     # drop accidental suffixes
+  s="${s//$'\r'/}"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
+  s="${s,,}"
+  [[ "$s" == *.json ]] && s="${s%.json}"
   [[ "$s" == *.proto ]] && s="${s%.proto}"
   echo "$s"
+}
+
+# If enabled and group has exactly one '.vN' segment, returns 'N.0.0'; otherwise empty
+derive_semver_from_group() {
+  local g="$1"
+  if [[ "${RESOLVE_VERSION_FROM_NAMESPACE,,}" != "true" ]]; then
+    echo ""; return
+  fi
+  IFS='.' read -r -a parts <<< "$g"
+  local matches=0 num=""
+  for seg in "${parts[@]}"; do
+    if [[ "$seg" =~ ^v([0-9]+)$ ]]; then
+      matches=$((matches+1))
+      num="${BASH_REMATCH[1]}"
+    fi
+  done
+  if (( matches == 1 )); then
+    echo "${num}.0.0"
+  else
+    echo ""
+  fi
 }
 
 # Polls the registry until reachable or times out
@@ -48,7 +70,6 @@ wait_for_registry() {
   fail "Registry not reachable: ${REGISTRY_URL}"
 }
 
-
 # Returns group from Avro .namespace (normalized) or fallback
 derive_group_avro() {
   local file="$1"
@@ -58,7 +79,7 @@ derive_group_avro() {
     normalize_group "$ns"
     return
   fi
-  echo "$REGISTRY_GROUP"
+  echo "$REGISTRY_FALLBACK_GROUP"
 }
 
 # Returns group from JSON $id (minus final segment; normalized) or fallback
@@ -69,16 +90,16 @@ derive_group_json() {
   if [[ -n "$raw" ]]; then
     id="$raw"
     if [[ "$id" == *"://"* ]]; then
-      id="${id##*/}"        # last path segment
-      id="${id##*#}"        # last fragment segment
+      id="${id##*/}"
+      id="${id##*#}"
     fi
-    [[ "$id" == *.* ]] && id="${id%.*}"   # remove final dot segment
+    [[ "$id" == *.* ]] && id="${id%.*}"
     if [[ -n "$id" ]]; then
       normalize_group "$id"
       return
     fi
   fi
-  echo "$REGISTRY_GROUP"
+  echo "$REGISTRY_FALLBACK_GROUP"
 }
 
 # Returns group from Protobuf package (normalized) or fallback
@@ -93,7 +114,7 @@ derive_group_proto() {
     normalize_group "$pkg"
     return
   fi
-  echo "$REGISTRY_GROUP"
+  echo "$REGISTRY_FALLBACK_GROUP"
 }
 
 # Returns artifactId from Avro .name or filename
@@ -130,7 +151,7 @@ derive_artifactId_proto() {
   local file="$1"
   local msg
   msg=$(awk '
-    /^[[:space:]]*\/\// { next }                                 # skip // comments
+    /^[[:space:]]*\/\// { next }
     /^[[:space:]]*message[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*(\{|$)/ {
       for (i=1;i<=NF;i++) if ($i=="message") { print $(i+1); exit }
     }' "$file" | sed 's/[{;].*$//' )
@@ -155,33 +176,50 @@ suffix_for_type() {
   fi
 }
 
-# Posts a new artifact (group/type/id/content) and logs failures
+# Posts a new artifact (group/type/id/content/version) and logs failures
 post_artifact_v3() {
-  local group="$1" artifactId="$2" artifactType="$3" content_file="$4"
+  local group="$1" artifactId="$2" artifactType="$3" content_file="$4" version="${5:-}"
 
   local contentType="application/json"
   [[ "${artifactType}" == "PROTOBUF" ]] && contentType="text/plain"
 
-  # Read file content and embed in JSON safely
   local content
   content="$(cat "$content_file")"
   local content_len; content_len=$(wc -c < "$content_file" | tr -d ' ')
 
   local body
-  body=$(jq -n \
-    --arg artifactId "${artifactId}" \
-    --arg artifactType "${artifactType}" \
-    --arg contentType "${contentType}" \
-    --arg content "${content}" \
-    '{
-      artifactId: $artifactId,
-      artifactType: $artifactType,
-      firstVersion: { content: { content: $content, contentType: $contentType } }
-    }')
+  if [[ -n "$version" ]]; then
+    body=$(jq -n \
+      --arg artifactId "${artifactId}" \
+      --arg artifactType "${artifactType}" \
+      --arg version "${version}" \
+      --arg contentType "${contentType}" \
+      --arg content "${content}" \
+      '{
+        artifactId: $artifactId,
+        artifactType: $artifactType,
+        firstVersion: {
+          version: $version,
+          content: { content: $content, contentType: $contentType }
+        }
+      }')
+  else
+    body=$(jq -n \
+      --arg artifactId "${artifactId}" \
+      --arg artifactType "${artifactType}" \
+      --arg contentType "${contentType}" \
+      --arg content "${content}" \
+      '{
+        artifactId: $artifactId,
+        artifactType: $artifactType,
+        firstVersion: {
+          content: { content: $content, contentType: $contentType }
+        }
+      }')
+  fi
 
   local group_enc; group_enc="$(urlenc "$group")"
 
-  # Capture response body and headers
   local tmp_body tmp_hdr
   tmp_body="$(mktemp)"
   tmp_hdr="$(mktemp)"
@@ -193,13 +231,13 @@ post_artifact_v3() {
             "${REGISTRY_URL}/groups/${group_enc}/artifacts")
 
   if [[ "${code}" == "200" || "${code}" == "201" || "${code}" == "204" ]]; then
-    log "Registered ${artifactType} artifact '${artifactId}' in group '${group}'"
+    log "Registered ${artifactType} artifact '${artifactId}' in group '${group}'${version:+ (version=${version})}"
     rm -f "$tmp_body" "$tmp_hdr"
   elif [[ "${code}" == "409" ]]; then
     log "Skipped (already exists) ${artifactType} artifact '${artifactId}' in group '${group}'"
     rm -f "$tmp_body" "$tmp_hdr"
   else
-    log "POST failed (HTTP ${code}) for '${artifactId}' in group '${group}' (payload=${content_len} bytes)"
+    log "POST failed (HTTP ${code}) for '${artifactId}' in group '${group}' (payload=${content_len} bytes${version:+, version=${version}})"
     if [[ "${LOG_FAILED_HTTP_RESPONSE_HEADERS}" == "true" && -s "$tmp_hdr" ]]; then
       log "Response headers:"
       sed -e 's/\r$//' "$tmp_hdr" | head -n 50
@@ -221,47 +259,50 @@ walk_files() {
   find "${SCHEMA_DIR}" -maxdepth 1 -type f -name "${pattern}" -print0
 }
 
-# Discovers .avsc files and posts them with derived group/id
+# Discovers .avsc files and posts them with derived group/id/version
 bootstrap_avro() {
   local any=0
   while IFS= read -r -d '' f; do
     any=1
     local gid; gid="$(derive_group_avro "$f")"
+    local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_avro "$f")"
     local sfx; sfx="$(suffix_for_type AVRO)"
     local final_id="${id}${sfx}"
-    log "AVRO -> ${final_id} (group='${gid}') from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "AVRO" "$f"
+    log "AVRO -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${final_id}" "AVRO" "$f" "${ver}"
   done < <(walk_files '*.avsc')
   (( any == 1 )) || log "No .avsc files found in ${SCHEMA_DIR}"
 }
 
-# Discovers .json files and posts them with derived group/id
+# Discovers .json files and posts them with derived group/id/version
 bootstrap_json() {
   local any=0
   while IFS= read -r -d '' f; do
     any=1
     local gid; gid="$(derive_group_json "$f")"
+    local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_json "$f")"
     local sfx; sfx="$(suffix_for_type JSON)"
     local final_id="${id}${sfx}"
-    log "JSON -> ${final_id} (group='${gid}') from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "JSON" "$f"
+    log "JSON -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${final_id}" "JSON" "$f" "${ver}"
   done < <(walk_files '*.json')
   (( any == 1 )) || log "No .json files found in ${SCHEMA_DIR}"
 }
 
-# Discovers .proto files and posts them with derived group/id
+# Discovers .proto files and posts them with derived group/id/version
 bootstrap_proto() {
   local any=0
   while IFS= read -r -d '' f; do
     any=1
     local gid; gid="$(derive_group_proto "$f")"
+    local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_proto "$f")"
     local sfx; sfx="$(suffix_for_type PROTOBUF)"
     local final_id="${id}${sfx}"
-    log "PROTOBUF -> ${final_id} (group='${gid}') from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "PROTOBUF" "$f"
+    log "PROTOBUF -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${final_id}" "PROTOBUF" "$f" "${ver}"
   done < <(walk_files '*.proto')
   (( any == 1 )) || log "No .proto files found in ${SCHEMA_DIR}"
 }
@@ -273,8 +314,9 @@ main() {
   [[ -d "${SCHEMA_DIR}" ]] || fail "Schema directory not found: ${SCHEMA_DIR}"
 
   log "Using schema directory: ${SCHEMA_DIR}"
-  log "Default fallback group: ${REGISTRY_GROUP}"
+  log "Default fallback group: ${REGISTRY_FALLBACK_GROUP}"
   log "ArtifactId suffix by type: ${ARTIFACT_ID_SUFFIX_BY_TYPE}"
+  log "Resolve version from namespace: ${RESOLVE_VERSION_FROM_NAMESPACE}"
   wait_for_registry
   bootstrap_avro
   bootstrap_json
