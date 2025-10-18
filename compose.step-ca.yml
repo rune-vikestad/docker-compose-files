@@ -9,6 +9,7 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
+        ALPINE_VERSION: 3.20
         STEP_CA_VERSION: 0.28.4
     environment:
       STEP_PATH: /home/step
