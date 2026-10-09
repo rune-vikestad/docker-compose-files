@@ -2,7 +2,7 @@
 
 This repository contains a collection of docker compose files that I've used extensively for local development.
 
-# Environment Variables
+## Environment Variables
 
 You can use `.env` file to control a set of environment variables used by docker compose, including;
 
@@ -20,7 +20,7 @@ You can modify `COMPOSE_FILE` and `COMPOSE_PROFILES` in `.env` to add or remove 
 
 Then simply run `docker compose up -d --build`, and wait for them to spin up.
 
-# Health Checks
+## Health Checks
 
 Many services utilize `depends_on` to ensure dependant services are running and healthy before we start it. 
 
