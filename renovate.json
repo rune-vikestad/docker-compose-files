@@ -14,14 +14,14 @@
         "grafana/mimir",
         "grafana/tempo"
       ],
-      "groupName": "Grafana",
+      "groupName": "grafana",
       "separateMinorPatch": true
     },
     {
       "description": "Broker image and the CLI version kafka-bootstrap downloads should move together",
       "matchDatasources": ["docker"],
       "matchDepNames": ["apache/kafka-native", "apache/kafka"],
-      "groupName": "Kafka"
+      "groupName": "kafka"
     },
     {
       "description": "KAFKA_VERSION builds a download URL, so it must stay a plain version without a digest",
@@ -33,7 +33,7 @@
       "description": "Apicurio Registry and Apicurio Registry UI are released together and should stay on the same version",
       "matchDatasources": ["docker"],
       "matchDepNames": ["apicurio/apicurio-registry", "apicurio/apicurio-registry-ui"],
-      "groupName": "Apicurio Registry"
+      "groupName": "apicurio-registry"
     }
   ],
 
