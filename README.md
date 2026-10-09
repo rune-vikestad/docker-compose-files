@@ -1,4 +1,4 @@
-# Contoso Docker Compose
+# Docker Compose Files
 
 This repository contains a collection of docker compose files that I've used extensively for local development.
 
