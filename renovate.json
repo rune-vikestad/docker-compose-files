@@ -1,0 +1,51 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "docker:pinDigests"],
+  "enabledManagers": ["dockerfile", "docker-compose", "custom.regex"],
+  "labels": ["deps", "renovate"],
+  "automerge": false,
+
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": [
+        "grafana/grafana-oss",
+        "grafana/loki",
+        "grafana/mimir",
+        "grafana/tempo"
+      ],
+      "groupName": "grafana-stack",
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Broker image and the CLI version kafka-bootstrap downloads should move together",
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["apache/kafka-native", "apache/kafka"],
+      "groupName": "kafka"
+    },
+    {
+      "description": "KAFKA_VERSION builds a download URL, so it must stay a plain version without a digest",
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["apache/kafka"],
+      "pinDigests": false
+    },
+    {
+      "description": "Registry and UI are released together and should stay on the same version",
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["apicurio/apicurio-registry", "apicurio/apicurio-registry-ui"],
+      "groupName": "apicurio-registry"
+    }
+  ],
+
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Kafka CLI version downloaded by kafka-bootstrap, tracked via the apache/kafka image tags",
+      "managerFilePatterns": ["/(^|/)kafka-bootstrap/Dockerfile$/"],
+      "matchStrings": ["ARG KAFKA_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "apache/kafka",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ]
+}
