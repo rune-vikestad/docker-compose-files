@@ -1,3 +1,3 @@
 # syntax=docker/dockerfile:1.28@sha256:bb22d9815c728170f72750f4e5b0d672e06176142e1d602c7e66c050100b7e5b
 
-FROM apicurio/apicurio-registry-ui:3.2.4@sha256:e62d83355231d511cb1f1c0d1665fbcad2ac24d910915c7f95292780e158a6a1
+FROM apicurio/apicurio-registry-ui:3.3.3@sha256:ca660c798ce30764ca429d4a0bae5822820db1529d743bb021707201b5b51aff
