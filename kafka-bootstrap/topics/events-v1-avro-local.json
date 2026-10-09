@@ -1,0 +1,14 @@
+{
+  "name": "events-v1-avro-local",
+  "partitions": 1,
+  "config": {
+    "cleanup.policy": "compact"
+  },
+  "key": {
+    "type": "STRING"
+  },
+  "value": {
+    "type": "AVRO",
+    "schema": "io.cloudevents.v1.avro.compact.CloudEvent.avsc"
+  }
+}

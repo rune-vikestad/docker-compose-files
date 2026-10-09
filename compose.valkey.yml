@@ -1,0 +1,43 @@
+services:
+  #
+  # Valkey
+  #
+  valkey:
+    container_name: valkey
+    hostname: valkey
+    restart: unless-stopped
+    profiles:
+      - valkey
+    build:
+      context: ./valkey
+      dockerfile: Dockerfile
+    environment:
+      VALKEY_PASSWORD: tMdBf3yfe5fZamjRg3e4ngKqkrUtdbU8
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a \"$${VALKEY_PASSWORD}\" --no-auth-warning ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    ports:
+      - 6379:6379
+    networks:
+      - default
+
+  valkey-admin:
+    container_name: valkey-admin
+    hostname: valkey-admin
+    restart: unless-stopped
+    profiles:
+      - valkey
+    depends_on:
+      valkey:
+        condition: service_healthy
+    build:
+      context: ./valkey-admin
+      dockerfile: Dockerfile
+    ports:
+      - 8379:8080
+    environment:
+      DEPLOYMENT_MODE: "Web"
+    networks:
+      - default

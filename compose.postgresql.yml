@@ -11,15 +11,13 @@ services:
     build:
       context: ./postgresql
       dockerfile: Dockerfile
-      args:
-        POSTGRES_VERSION: 17.6
     environment:
       PGPORT: 5432
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Hxae2dBVw5MrdDnT
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - postgresql:/var/lib/postgresql
     ports:
       - 5432:5432
     healthcheck:
@@ -32,5 +30,5 @@ services:
       - default
 
 volumes:
-  postgresql-data:
+  postgresql:
     external: false

@@ -5,7 +5,6 @@ set -euo pipefail
 REGISTRY_URL="${REGISTRY_URL:-http://apicurio-registry:8080/apis/registry/v3}"
 REGISTRY_FALLBACK_GROUP="${REGISTRY_FALLBACK_GROUP:-default}"
 SCHEMA_DIR="${SCHEMA_DIR:-/usr/local/share/apicurio/schemas}"
-ARTIFACT_ID_SUFFIX_BY_TYPE="${ARTIFACT_ID_SUFFIX_BY_TYPE:-true}"
 RESOLVE_VERSION_FROM_NAMESPACE="${RESOLVE_VERSION_FROM_NAMESPACE:-true}"
 LOG_FAILED_HTTP_RESPONSE_HEADERS="${LOG_FAILED_HTTP_RESPONSE_HEADERS:-true}"
 LOG_FAILED_HTTP_RESPONSE_BODY="${LOG_FAILED_HTTP_RESPONSE_BODY:-true}"
@@ -161,21 +160,6 @@ derive_artifactId_proto() {
   basename "$file" .proto
 }
 
-# Returns the extension suffix for the artifactId (or empty)
-suffix_for_type() {
-  local t="$1"
-  if [[ "${ARTIFACT_ID_SUFFIX_BY_TYPE}" == "true" ]]; then
-    case "$t" in
-      AVRO) echo ".avro" ;;
-      JSON) echo ".json" ;;
-      PROTOBUF) echo ".proto" ;;
-      *) echo "" ;;
-    esac
-  else
-    echo ""
-  fi
-}
-
 # Posts a new artifact (group/type/id/content/version) and logs failures
 post_artifact_v3() {
   local group="$1" artifactId="$2" artifactType="$3" content_file="$4" version="${5:-}"
@@ -267,10 +251,8 @@ bootstrap_avro() {
     local gid; gid="$(derive_group_avro "$f")"
     local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_avro "$f")"
-    local sfx; sfx="$(suffix_for_type AVRO)"
-    local final_id="${id}${sfx}"
-    log "AVRO -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "AVRO" "$f" "${ver}"
+    log "AVRO -> ${id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${id}" "AVRO" "$f" "${ver}"
   done < <(walk_files '*.avsc')
   (( any == 1 )) || log "No .avsc files found in ${SCHEMA_DIR}"
 }
@@ -283,10 +265,8 @@ bootstrap_json() {
     local gid; gid="$(derive_group_json "$f")"
     local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_json "$f")"
-    local sfx; sfx="$(suffix_for_type JSON)"
-    local final_id="${id}${sfx}"
-    log "JSON -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "JSON" "$f" "${ver}"
+    log "JSON -> ${id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${id}" "JSON" "$f" "${ver}"
   done < <(walk_files '*.json')
   (( any == 1 )) || log "No .json files found in ${SCHEMA_DIR}"
 }
@@ -299,10 +279,8 @@ bootstrap_proto() {
     local gid; gid="$(derive_group_proto "$f")"
     local ver; ver="$(derive_semver_from_group "$gid")"
     local id;  id="$(derive_artifactId_proto "$f")"
-    local sfx; sfx="$(suffix_for_type PROTOBUF)"
-    local final_id="${id}${sfx}"
-    log "PROTOBUF -> ${final_id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
-    post_artifact_v3 "${gid}" "${final_id}" "PROTOBUF" "$f" "${ver}"
+    log "PROTOBUF -> ${id} (group='${gid}'${ver:+, version=${ver}}) from $(basename "$f")"
+    post_artifact_v3 "${gid}" "${id}" "PROTOBUF" "$f" "${ver}"
   done < <(walk_files '*.proto')
   (( any == 1 )) || log "No .proto files found in ${SCHEMA_DIR}"
 }
@@ -315,7 +293,6 @@ main() {
 
   log "Using schema directory: ${SCHEMA_DIR}"
   log "Default fallback group: ${REGISTRY_FALLBACK_GROUP}"
-  log "ArtifactId suffix by type: ${ARTIFACT_ID_SUFFIX_BY_TYPE}"
   log "Resolve version from namespace: ${RESOLVE_VERSION_FROM_NAMESPACE}"
   wait_for_registry
   bootstrap_avro

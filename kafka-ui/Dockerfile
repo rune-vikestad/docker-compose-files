@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 
-ARG KAFKA_UI_VERSION=v0.7.2
-
-FROM provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+FROM provectuslabs/kafka-ui:v0.7.2@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818

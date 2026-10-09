@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/mssql/server:2022-latest
+# syntax=docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+
+FROM mcr.microsoft.com/mssql/server:2025-latest@sha256:320daf857745ef0092c6e53e82d0bf81ed6bca2794e6ccbffb72cf6a8d14a441
 
 USER root
 RUN mkdir -p /var/log/docker && chown -R mssql:mssql /var/log/docker

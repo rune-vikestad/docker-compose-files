@@ -1,26 +1,27 @@
+
 services:
-  # The following compose files are also included:
+  # This is just a dummy service, as docker compose requires at least 
+  # one service to be defined in the root compose.yml file.
+  # 
+  # The following compose files contain additional services:
   # 
   # Required
   #   - compose.apicurio.yml
   #   - compose.grafana.yml
-  #   - compose.kafka.cluster.yml -or- compose.kafka.single.yml
+  #   - compose.kafka.cluster.yml --- OR --- compose.kafka.single.yml
+  #   - compose.microsoft-sql-server.yml
   #   - compose.opentelemetry.yml
   #   - compose.postgresql.yml
-  # 
-  # Optional
-  #   - compose.step-ca.yml
-  #   - compose.microsoft-sql-server-2022.yml
+  #   - compose.valkey.yml
   #
-  # You can adjust which compose files are loaded by modifying 
-  # the `COMPOSE_PROFILES` environment variable in the `.env` file.
+  # You can adjust which compose files are loaded by modifying the `COMPOSE_FILE` 
+  # and `COMPOSE_PROFILES` environment variables in the `.env` file.
   #
   dummy:
-    image: busybox
+    image: busybox@sha256:1487d0af5f52b4ba31c7e465126ee2123fe3f2305d638e7827681e7cf6c83d5e
     command: ["sh", "-c", "tail -f /dev/null"]
     profiles: ["dummy"] 
-   
+
 networks:
   default:
     driver: bridge
-

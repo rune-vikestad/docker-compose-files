@@ -1,7 +1,4 @@
 services:
-  #
-  # Apicurio Registry
-  #
   apicurio-registry:
     container_name: apicurio-registry
     hostname: apicurio-registry
@@ -15,14 +12,12 @@ services:
     build:
       context: ./apicurio-registry
       dockerfile: Dockerfile
-      args:
-        APICURIO_REGISTRY_VERSION: 3.0.12
     environment:
       APICURIO_STORAGE_KIND: sql
       APICURIO_STORAGE_SQL_KIND: postgresql
       APICURIO_DATASOURCE_URL: jdbc:postgresql://postgresql/apicurio
-      APICURIO_DATASOURCE_USERNAME: apicurio
-      APICURIO_DATASOURCE_PASSWORD: sKWCsUmPoA5EzXhQ
+      APICURIO_DATASOURCE_USERNAME: svc_apicurio_registry
+      APICURIO_DATASOURCE_PASSWORD: 1wg45TrZCioqXghDDh3PhdiQe5KU4Yq7
       QUARKUS_HTTP_CORS: "true"
       QUARKUS_HTTP_CORS_ORIGINS: "http://localhost:8888"
       QUARKUS_HTTP_CORS_METHODS: "GET,PUT,POST,DELETE,OPTIONS"
@@ -51,21 +46,15 @@ services:
     build:
       context: ./apicurio-registry-bootstrap
       dockerfile: Dockerfile
-      args:
-        ALPINE_VERSION: 3.22.2
     environment:
       REGISTRY_URL: http://apicurio-registry:8080/apis/registry/v3
       REGISTRY_FALLBACK_GROUP: default
       SCHEMA_DIR: /usr/local/share/apicurio/schemas
-      ARTIFACT_ID_SUFFIX_BY_TYPE: true
       LOG_FAILED_HTTP_RESPONSE_HEADERS: true
       LOG_FAILED_HTTP_RESPONSE_BODY: true
     networks:
       - default
 
-  #
-  # Apicurio Registry UI
-  #
   apicurio-registry-ui:
     container_name: apicurio-registry-ui
     hostname: apicurio-registry-ui
@@ -79,8 +68,6 @@ services:
     build:
       context: ./apicurio-registry-ui
       dockerfile: Dockerfile
-      args:
-        APICURIO_REGISTRY_UI_VERSION: 3.0.12
     environment:
       REGISTRY_API_URL: http://localhost:8080/apis/registry/v3
     ports:

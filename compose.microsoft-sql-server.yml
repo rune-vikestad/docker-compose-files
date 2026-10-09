@@ -1,24 +1,24 @@
-name: rune-vikestad
-
 services:
-  microsoft-sql-server-2022:
-    container_name: microsoft-sql-server-2022
-    hostname: microsoft-sql-server-2022
+  microsoft-sql-server:
+    container_name: microsoft-sql-server
+    hostname: microsoft-sql-server
     restart: unless-stopped
+    # Give SQL Server time to checkpoint and shut down cleanly before Docker kills it
+    stop_grace_period: 30s
     build:
-      context: ./microsoft-sql-server-2022
+      context: ./microsoft-sql-server
       dockerfile: Dockerfile
     profiles:
-      - microsoft-sql-server-2022
+      - microsoft-sql-server
     environment:
       ACCEPT_EULA: Y
-      MSSQL_SA_PASSWORD: BiMZmVQdNff4ki3X
+      MSSQL_SA_PASSWORD: X2eKy2t97LHX6QPXvjA0tqkQXu23Jfos
       MSSQL_COLLATION: SQL_Latin1_General_CP1_CI_AS
       MSSQL_PID: Developer
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '2'
           memory: 4G
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S 127.0.0.1,1433 -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" > /dev/null 2>&1 || exit 1"]
@@ -29,15 +29,10 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - microsoft-sql-server-2022-data:/var/opt/mssql
+      - microsoft-sql-server-data:/var/opt/mssql
     networks:
       - default
 
 volumes:
-  microsoft-sql-server-2022-data:
-    external: false
-
-networks:
-  default:
-    driver: bridge
+  microsoft-sql-server-data:
     external: false

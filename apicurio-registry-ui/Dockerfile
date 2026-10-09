@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 
-ARG APICURIO_REGISTRY_UI_VERSION=3.0.12
-
-FROM apicurio/apicurio-registry-ui:${APICURIO_REGISTRY_UI_VERSION}
+FROM apicurio/apicurio-registry-ui:3.2.4@sha256:e62d83355231d511cb1f1c0d1665fbcad2ac24d910915c7f95292780e158a6a1
