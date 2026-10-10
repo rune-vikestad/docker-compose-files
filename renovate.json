@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", "docker:pinDigests"],
-  "enabledManagers": ["dockerfile", "docker-compose", "custom.regex"],
+  "enabledManagers": ["dockerfile", "docker-compose", "github-actions", "custom.regex"],
   "labels": ["deps", "renovate"],
   "automerge": false,
 
@@ -46,6 +46,12 @@
       "depNameTemplate": "apache/kafka",
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Tool versions in workflows, marked with a '# renovate:' comment on the line above",
+      "managerFilePatterns": ["/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[A-Z0-9_]+: (?<currentValue>\\S+)"]
     }
   ]
 }
