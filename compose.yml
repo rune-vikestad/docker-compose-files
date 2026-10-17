@@ -10,6 +10,7 @@ services:
   #   - compose.grafana.yml
   #   - compose.kafka.cluster.yml --- OR --- compose.kafka.single.yml
   #   - compose.microsoft-sql-server.yml
+  #   - compose.openbao.yml
   #   - compose.opentelemetry.yml
   #   - compose.postgresql.yml
   #   - compose.valkey.yml
