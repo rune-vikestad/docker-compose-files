@@ -20,10 +20,7 @@ distributor:
         http:
           endpoint: 0.0.0.0:4318
 
-ingester:
-  max_block_duration: 5m
-
-compactor:
+backend_worker:
   compaction:
     block_retention: 24h
 
@@ -37,9 +34,6 @@ metrics_generator:
     remote_write:
       - url: http://grafana-mimir:9009/api/v1/push
         send_exemplars: true
-  # Required by the local-blocks processor; without it the whole generator fails to start
-  traces_storage:
-    path: /var/tempo/generator/traces
 
 storage:
   trace:
@@ -52,7 +46,7 @@ storage:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]
+      processors: [service-graphs, span-metrics]
 
 usage_report:
   reporting_enabled: false

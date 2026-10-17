@@ -1,6 +1,7 @@
 services:
   grafana:
     container_name: grafana
+    restart: unless-stopped
     hostname: grafana
     profiles: 
       - grafana
@@ -20,13 +21,11 @@ services:
 
   grafana-loki:
     container_name: grafana-loki
+    restart: unless-stopped
     hostname: grafana-loki
     profiles: 
       - grafana
       - grafana-loki
-    depends_on:
-      grafana:
-        condition: service_healthy
     build:
       context: ./grafana-loki
       dockerfile: Dockerfile
@@ -37,13 +36,11 @@ services:
 
   grafana-mimir:
     container_name: grafana-mimir
+    restart: unless-stopped
     hostname: grafana-mimir
     profiles: 
       - grafana
       - grafana-mimir
-    depends_on:
-      grafana:
-        condition: service_healthy
     build:
       context: ./grafana-mimir
       dockerfile: Dockerfile
@@ -52,19 +49,16 @@ services:
 
   grafana-tempo:
     container_name: grafana-tempo
+    restart: unless-stopped
     hostname: grafana-tempo
     profiles: 
       - grafana
       - grafana-tempo
-    depends_on:
-      grafana:
-        condition: service_healthy
     build:
       context: ./grafana-tempo
       dockerfile: Dockerfile
     volumes:
       - grafana-tempo-data:/var/tempo
-      
     networks:
       - default
 
