@@ -23,6 +23,9 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka-controller-data:/var/lib/kafka/data
+      # The image declares these as VOLUMEs, so leaving them unmounted creates anonymous volumes
+      - kafka-controller-secrets:/etc/kafka/secrets
+      - kafka-controller-config:/mnt/shared/config
     ports:
       - 9093:9093
     healthcheck:
@@ -76,6 +79,8 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka-broker-1-data:/var/lib/kafka/data
+      - kafka-broker-1-secrets:/etc/kafka/secrets
+      - kafka-broker-1-config:/mnt/shared/config
     ports:
       # Publish only the EXTERNAL listener to host. Keep 9092 internal to Docker network.
       - 19094:19094
@@ -130,6 +135,8 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka-broker-2-data:/var/lib/kafka/data
+      - kafka-broker-2-secrets:/etc/kafka/secrets
+      - kafka-broker-2-config:/mnt/shared/config
     ports:
       # Publish only the EXTERNAL listener to host. Keep 9092 internal to Docker network.
       - 19095:19095
@@ -205,5 +212,11 @@ services:
 
 volumes:
   kafka-controller-data:
+  kafka-controller-secrets:
+  kafka-controller-config:
   kafka-broker-1-data:
+  kafka-broker-1-secrets:
+  kafka-broker-1-config:
   kafka-broker-2-data:
+  kafka-broker-2-secrets:
+  kafka-broker-2-config:

@@ -1,11 +1,4 @@
 services:
-  #
-  # OpenBao
-  #
-  # Persists to a volume and unseals itself with a static key. On first start against an empty
-  # volume it mounts KV v2 at secret/ and creates a root token with the id in BAO_ROOT_TOKEN.
-  # Changing either value afterwards needs `docker compose down -v` to take effect.
-  #
   openbao:
     container_name: openbao
     hostname: openbao
@@ -24,12 +17,12 @@ services:
       timeout: 3s
       retries: 30
     volumes:
-      - openbao:/openbao/file
+      - openbao-data:/openbao/file
     ports:
       - 8200:8200
     networks:
       - default
 
 volumes:
-  openbao:
+  openbao-data:
     external: false

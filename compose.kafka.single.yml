@@ -40,6 +40,8 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka-data:/var/lib/kafka/data
+      - kafka-secrets:/etc/kafka/secrets
+      - kafka-config:/mnt/shared/config
     ports:
       - 19092:19092
     healthcheck:
@@ -100,3 +102,5 @@ services:
 
 volumes:
   kafka-data:
+  kafka-secrets:
+  kafka-config:
