@@ -3,7 +3,7 @@
 ARG KAFKA_VERSION=4.3.1
 ARG SCALA_VERSION=2.13
 
-FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
+FROM alpine:3.24.4@sha256:93b41ef40b1677fce8fcc64ff4af09daddfacf5040afde618bc46c1e2d1cc7d4
 
 RUN apk add --no-cache bash jq curl tar openjdk21-jre-headless
 
