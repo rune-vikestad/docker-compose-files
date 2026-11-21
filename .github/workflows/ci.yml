@@ -16,7 +16,7 @@ concurrency:
 
 env:
   # renovate: datasource=npm depName=renovate
-  RENOVATE_VERSION: 44.166.0
+  RENOVATE_VERSION: 44.257.8
 
 jobs:
   compose-config:
